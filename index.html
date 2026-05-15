@@ -63,12 +63,16 @@
             const [invoiceNum, setInvoiceNum] = useState("1001");
             const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
             const [clientName, setClientName] = useState("");
+            const [clientPhone, setClientPhone] = useState("");
             const [year, setYear] = useState("");
             const [make, setMake] = useState("");
             const [model, setModel] = useState("");
+            const [vin, setVin] = useState("");
             const [rows, setRows] = useState([initialRow()]);
             const [discount, setDiscount] = useState("0");
             const [notes, setNotes] = useState("");
+
+            const VA_TAX_RATE = 0.043; // Virginia State Tax (4.3%)
 
             const addRow = () => setRows(r => [...r, initialRow()]);
             const removeRow = (id) => setRows(r => r.filter(x => x.id !== id));
@@ -86,7 +90,10 @@
 
             const subtotal = rows.reduce((sum, r) => sum + (parseFloat(r.rate) || 0), 0);
             const discountAmt = parseFloat(discount) || 0;
-            const total = Math.max(0, subtotal - discountAmt);
+            const taxableAmount = Math.max(0, subtotal - discountAmt);
+            const taxTotal = taxableAmount * VA_TAX_RATE;
+            const total = taxableAmount + taxTotal;
+
             const fmt = n => "$" + n.toFixed(2);
 
             const red = "#C0392B";
@@ -115,7 +122,9 @@
                                 <div>
                                     <h2 style={{ fontSize: 28, color: red, marginBottom: 10 }}>INVOICE</h2>
                                     <p><b>Client:</b> {clientName || "—"}</p>
+                                    <p><b>Phone:</b> {clientPhone || "—"}</p>
                                     <p><b>Vehicle:</b> {year} {make} {model}</p>
+                                    <p><b>VIN:</b> {vin || "—"}</p>
                                 </div>
                                 <div style={{ textAlign: "right", fontSize: 15, lineHeight: "1.8" }}>
                                     <p><b>Invoice Number:</b> #{invoiceNum}</p>
@@ -144,12 +153,15 @@
                             </table>
 
                             <div style={{ marginLeft: "auto", width: 280 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 15 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 14 }}>
                                     <span>Subtotal:</span><span>{fmt(subtotal)}</span>
                                 </div>
-                                {discountAmt > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", color: red, fontSize: 15 }}>
+                                {discountAmt > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", color: red, fontSize: 14 }}>
                                     <span>Discount:</span><span>-{fmt(discountAmt)}</span>
                                 </div>}
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 14 }}>
+                                    <span>Sales Tax (VA 4.3%):</span><span>{fmt(taxTotal)}</span>
+                                </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 0", borderTop: `2px solid ${dark}`, fontWeight: 900, fontSize: 22, marginTop: 10 }}>
                                     <span>TOTAL:</span><span>{fmt(total)}</span>
                                 </div>
@@ -184,13 +196,25 @@
                             </div>
                         </div>
 
-                        <label style={labelStyle}>Customer Name</label>
-                        <input style={inputStyle} placeholder="John Doe" value={clientName} onChange={e => setClientName(e.target.value)} />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                            <div>
+                                <label style={labelStyle}>Customer Name</label>
+                                <input style={inputStyle} placeholder="John Doe" value={clientName} onChange={e => setClientName(e.target.value)} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Phone Number</label>
+                                <input style={inputStyle} placeholder="(555) 555-5555" value={clientPhone} onChange={e => setClientPhone(e.target.value)} />
+                            </div>
+                        </div>
                         
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
                             <div><label style={labelStyle}>Year</label><input style={inputStyle} placeholder="2022" value={year} onChange={e => setYear(e.target.value)} /></div>
                             <div><label style={labelStyle}>Make</label><input style={inputStyle} placeholder="BMW" value={make} onChange={e => setMake(e.target.value)} /></div>
                             <div><label style={labelStyle}>Model</label><input style={inputStyle} placeholder="X5" value={model} onChange={e => setModel(e.target.value)} /></div>
+                        </div>
+                        <div style={{ marginTop: "10px" }}>
+                            <label style={labelStyle}>VIN Number</label>
+                            <input style={inputStyle} placeholder="17-character VIN" value={vin} onChange={e => setVin(e.target.value)} />
                         </div>
 
                         <h3 style={{ margin: "20px 0 10px", fontSize: 13, color: red, textTransform: "uppercase", fontWeight: 800 }}>Services & Labor</h3>
@@ -213,6 +237,12 @@
 
                         <label style={labelStyle}>Discount Amount ($)</label>
                         <input style={inputStyle} placeholder="0.00" value={discount} onChange={e => setDiscount(e.target.value)} />
+
+                        <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: 8, marginBottom: "20px" }}>
+                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}><span>Subtotal:</span><span>{fmt(subtotal)}</span></div>
+                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", marginTop: "5px" }}><span>VA Tax (4.3%):</span><span>{fmt(taxTotal)}</span></div>
+                           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "700", marginTop: "5px", borderTop: "1px solid #ddd", paddingTop: "5px" }}><span>Estimated Total:</span><span>{fmt(total)}</span></div>
+                        </div>
 
                         <label style={labelStyle}>Additional Notes</label>
                         <textarea style={{ ...inputStyle, height: "100px" }} placeholder="Warranty info, parts details, etc." value={notes} onChange={e => setNotes(e.target.value)} />
