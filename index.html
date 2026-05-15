@@ -1,70 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invoice Builder</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>German Auto Invoice Builder</title>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
-* {
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-    font-family: Georgia, serif;
-    background:#f7f5f2;
-    color:#1a1a1a;
+  font-family: Georgia, serif;
+  background:#f7f5f2;
+  color:#1a1a1a;
 }
 
-#root {
-    min-height:100vh;
-}
+#root { min-height:100vh; }
 
-/* LOGOS */
+/* FIXED LOGO RENDERING */
 .invoice-logo {
-    height:30px;
-    width:auto;
-    object-fit:contain;
-    margin:0 10px;
+  height:34px;
+  width:auto;
+  object-fit:contain;
+  display:block;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* animated strip */
-.logo-strip {
-    display:flex;
-    gap:40px;
-    overflow:hidden;
-    white-space:nowrap;
-    animation: scroll 18s linear infinite;
-    padding:10px 0;
-    justify-content:center;
+/* TOP SCROLLING LOGO BAR */
+.logo-bar {
+  display:flex;
+  gap:25px;
+  overflow:hidden;
+  white-space:nowrap;
+  background:#111;
+  padding:10px;
 }
 
-@keyframes scroll {
-    0% { transform:translateX(100%); }
-    100% { transform:translateX(-100%); }
+.logo-bar img {
+  height:28px;
+  filter: brightness(1);
 }
 
 /* PRINT FIX */
 @media print {
-    button { display:none !important; }
-    body { background:#fff; }
+  body { background:#fff !important; }
 
-    img {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
+  button { display:none !important; }
 
-    .invoice-logo {
-        max-height:28px;
-    }
+  .logo-bar {
+    display:flex !important;
+    flex-wrap:nowrap;
+  }
 
-    @page { margin:10px; }
+  .invoice-logo {
+    display:block !important;
+  }
+
+  @page { margin:10mm; }
 }
 </style>
 </head>
@@ -74,213 +70,85 @@ body {
 
 <script type="text/babel">
 
-const { useState, useEffect } = React;
+const { useState } = React;
 
-/* ---------------- LOGOS ---------------- */
+/* FIXED PNG LOGOS (PRINT SAFE) */
 const CAR_BRANDS = [
-    { name:"Mercedes", logo:"https://logo.clearbit.com/mercedes-benz.com" },
-    { name:"BMW", logo:"https://logo.clearbit.com/bmw.com" },
-    { name:"Audi", logo:"https://logo.clearbit.com/audi.com" },
-    { name:"Toyota", logo:"https://logo.clearbit.com/toyota.com" },
-    { name:"Ford", logo:"https://logo.clearbit.com/ford.com" },
+  { name:"Mercedes", logo:"https://logo.clearbit.com/mercedes-benz.com" },
+  { name:"BMW", logo:"https://logo.clearbit.com/bmw.com" },
+  { name:"Audi", logo:"https://logo.clearbit.com/audi.com" },
+  { name:"Toyota", logo:"https://logo.clearbit.com/toyota.com" },
+  { name:"Ford", logo:"https://logo.clearbit.com/ford.com" },
+  { name:"Honda", logo:"https://logo.clearbit.com/honda.com" },
 ];
 
-/* preload images (FIX PRINT ISSUE) */
-function preloadLogos(){
-    CAR_BRANDS.forEach(b => {
-        const img = new Image();
-        img.src = b.logo;
-    });
-}
+function InvoiceApp() {
 
-/* ---------------- SERVICES ---------------- */
-const SERVICES = [
-    { label:"Oil Change", rate:40 },
-    { label:"Brake Service", rate:120 },
-    { label:"Diagnostics", rate:60 },
-    { label:"Battery Replacement", rate:80 },
-    { label:"Custom / Other", rate:0 },
-];
+  const [view,setView]=useState("form");
+  const [discount,setDiscount]=useState(0);
 
-function App(){
+  const subtotal=100; // placeholder for now
 
-useEffect(() => {
-    preloadLogos();
-}, []);
+  const total=subtotal - (subtotal*discount/100);
 
-const [rows,setRows] = useState([
-    { id:Date.now(), service:"", rate:"", discount:"0", note:"" }
-]);
+  /* TOP BAR */
+  const LogoBar = () => (
+    <div className="logo-bar">
+      {CAR_BRANDS.map(b=>(
+        <img key={b.name} src={b.logo} />
+      ))}
+    </div>
+  );
 
-const [client,setClient] = useState("");
-const [make,setMake] = useState("");
-const [model,setModel] = useState("");
+  if(view==="preview"){
+    return (
+      <div>
 
-const addRow = () => {
-    setRows([...rows,{
-        id:Date.now()+Math.random(),
-        service:"",
-        rate:"",
-        discount:"0",
-        note:""
-    }]);
-};
+        <LogoBar />
 
-const update = (id,key,val) => {
-    setRows(rows.map(r=>{
-        if(r.id!==id) return r;
+        <button onClick={()=>setView("form")}>Back</button>
+        <button onClick={()=>window.print()}>Print</button>
 
-        let updated = {...r,[key]:val};
+        <div style={{padding:20, background:"#fff", margin:20}}>
 
-        if(key==="service"){
-            const found = SERVICES.find(s=>s.label===val);
-            if(found) updated.rate = found.rate;
-        }
+          <h1>German Auto Service</h1>
+          <p>(703) 980-6349</p>
 
-        return updated;
-    }));
-};
+          <hr/>
 
-/* ---------------- FIXED CALCULATION ---------------- */
-const subtotal = rows.reduce((sum,r)=>{
-    const rate = parseFloat(r.rate)||0;
-    const discount = parseFloat(r.discount)||0;
-    return sum + (rate - rate * discount / 100);
-},0);
+          <h2>Invoice</h2>
 
-const fmt = n => "$" + n.toFixed(2);
+          <label>Global Discount %</label>
+          <input
+            type="number"
+            value={discount}
+            onChange={e=>setDiscount(e.target.value)}
+          />
 
-/* ---------------- PRINT SAFE ---------------- */
-const handlePrint = () => {
-    setTimeout(() => {
-        window.print();
-    }, 300);
-};
+          <h3>Subtotal: ${subtotal}</h3>
+          <h2>Total: ${total}</h2>
 
-return (
-<div>
+        </div>
+      </div>
+    );
+  }
 
-{/* HEADER */}
-<div style={{
-    background:"#C0392B",
-    color:"#fff",
-    padding:15,
-    textAlign:"center"
-}}>
-    <h2>Invoice Builder</h2>
-    <div>German Auto Services • 7039806349</div>
-</div>
+  return (
+    <div>
 
-{/* LOGO STRIP */}
-<div className="logo-strip">
-    {CAR_BRANDS.map(b=>(
-        <img key={b.name} src={b.logo} className="invoice-logo" />
-    ))}
-</div>
+      <LogoBar />
 
-{/* FORM */}
-<div style={{padding:20,maxWidth:650,margin:"auto"}}>
+      <button onClick={()=>setView("preview")}>
+        Preview
+      </button>
 
-<input
-placeholder="Client Name"
-value={client}
-onChange={e=>setClient(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:10}}
-/>
-
-<input
-placeholder="Make"
-value={make}
-onChange={e=>setMake(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:10}}
-/>
-
-<input
-placeholder="Model"
-value={model}
-onChange={e=>setModel(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:20}}
-/>
-
-{/* SERVICES */}
-{rows.map((r,i)=>(
-<div key={r.id} style={{
-    background:"#fff",
-    padding:10,
-    marginBottom:10
-}}>
-
-<div>Service {i+1}</div>
-
-<select
-value={r.service}
-onChange={e=>update(r.id,"service",e.target.value)}
-style={{width:"100%",padding:8}}
->
-<option value="">Select Service</option>
-{SERVICES.map(s=>(
-<option key={s.label}>{s.label}</option>
-))}
-</select>
-
-<input
-placeholder="Rate"
-value={r.rate}
-onChange={e=>update(r.id,"rate",e.target.value)}
-style={{width:"100%",padding:8,marginTop:5}}
-/>
-
-{/* DISCOUNT FIXED */}
-<input
-placeholder="Discount %"
-type="number"
-value={r.discount}
-onChange={e=>update(r.id,"discount",e.target.value)}
-style={{width:"100%",padding:8,marginTop:5}}
-/>
-
-</div>
-))}
-
-<button
-onClick={addRow}
-style={{padding:10,width:"100%"}}
->
-+ Add Service
-</button>
-
-{/* TOTAL */}
-<div style={{
-    marginTop:20,
-    padding:10,
-    background:"#fff"
-}}>
-<h3>Total: {fmt(subtotal)}</h3>
-</div>
-
-{/* PRINT */}
-<button
-onClick={handlePrint}
-style={{
-width:"100%",
-padding:12,
-marginTop:10,
-background:"#C0392B",
-color:"#fff",
-border:"none"
-}}>
-Print Invoice
-</button>
-
-</div>
-</div>
-);
+    </div>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root"))
-.render(<App/>);
+.render(<InvoiceApp/>);
 
 </script>
-
 </body>
 </html>
