@@ -12,10 +12,11 @@
         html, body { font-family: 'Georgia', serif; background: #f7f5f2; color: #1a1a1a; }
         #root { min-height: 100vh; }
         @media print {
-            body { background: white; }
+            body { background: white; padding: 0; }
             button { display: none !important; }
-            textarea, input, select { border: none !important; background: transparent !important; }
+            textarea, input, select { border: none !important; background: transparent !important; appearance: none; }
             .no-print { display: none !important; }
+            .invoice-card { box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
         }
     </style>
 </head>
@@ -23,9 +24,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useRef } = React;
+        const { useState } = React;
 
-        // Reliable Logo List
         const LOGO_LIST = [
             "https://www.carlogos.org/logo/BMW-logo.png",
             "https://www.carlogos.org/logo/Mercedes-Benz-logo.png",
@@ -60,14 +60,13 @@
 
         function InvoiceApp() {
             const [view, setView] = useState("form");
-            const [invoiceNum, setInvoiceNum] = useState("001");
+            const [invoiceNum, setInvoiceNum] = useState("1001");
             const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
             const [clientName, setClientName] = useState("");
             const [year, setYear] = useState("");
             const [make, setMake] = useState("");
             const [model, setModel] = useState("");
             const [rows, setRows] = useState([initialRow()]);
-            const [taxRate, setTaxRate] = useState("0");
             const [discount, setDiscount] = useState("0");
             const [notes, setNotes] = useState("");
 
@@ -87,78 +86,78 @@
 
             const subtotal = rows.reduce((sum, r) => sum + (parseFloat(r.rate) || 0), 0);
             const discountAmt = parseFloat(discount) || 0;
-            const taxableAmount = Math.max(0, subtotal - discountAmt);
-            const tax = taxableAmount * (parseFloat(taxRate) / 100 || 0);
-            const total = taxableAmount + tax;
+            const total = Math.max(0, subtotal - discountAmt);
             const fmt = n => "$" + n.toFixed(2);
 
             const red = "#C0392B";
             const dark = "#1a1a1a";
-
-            const inputStyle = { width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #ddd", marginBottom: "10px" };
-            const labelStyle = { fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase" };
+            const inputStyle = { width: "100%", padding: "12px", borderRadius: 8, border: "1.5 solid #ddd", marginBottom: "10px", fontSize: "16px" };
+            const labelStyle = { fontSize: 12, fontWeight: 700, color: "#555", textTransform: "uppercase", display: "block", marginBottom: "4px" };
 
             if (view === "preview") {
                 return (
-                    <div style={{ background: "#fff", minHeight: "100vh" }}>
-                        <div className="no-print" style={{ display: "flex", gap: 10, padding: 20, justifyContent: "center", background: "#f0f0f0" }}>
-                            <button onClick={() => setView("form")} style={{ padding: "10px 20px", borderRadius: 6 }}>← Edit</button>
-                            <button onClick={() => window.print()} style={{ padding: "10px 20px", background: red, color: "#fff", border: "none", borderRadius: 6 }}>Print Invoice</button>
+                    <div style={{ background: "#f7f5f2", minHeight: "100vh" }}>
+                        <div className="no-print" style={{ display: "flex", gap: 10, padding: 20, justifyContent: "center", background: "#fff", borderBottom: "1px solid #ddd" }}>
+                            <button onClick={() => setView("form")} style={{ padding: "12px 24px", borderRadius: 8, fontWeight: 600, border: "1px solid #ccc" }}>← Edit Form</button>
+                            <button onClick={() => window.print()} style={{ padding: "12px 24px", background: red, color: "#fff", border: "none", borderRadius: 8, fontWeight: 600 }}>Print / Save PDF</button>
                         </div>
 
-                        <div style={{ maxWidth: 700, margin: "0 auto", padding: 30 }}>
-                            {/* HEADER SECTION */}
-                            <div style={{ textAlign: "center", borderBottom: `4px solid ${red}`, paddingBottom: 20, marginBottom: 30 }}>
-                                <h1 style={{ fontSize: 32, fontWeight: 900, color: dark }}>GERMAN AUTO SERVICE</h1>
-                                <p style={{ fontSize: 14, color: "#666", marginBottom: 15 }}>(703) 980-6349 · Nasirahmad9393@gmail.com</p>
-                                
-                                {/* LOGO ROW */}
-                                <div style={{ display: "flex", justifyContent: "center", gap: 15, alignItems: "center", flexWrap: "wrap" }}>
-                                    {LOGO_LIST.map((url, i) => (
-                                        <img key={i} src={url} alt="brand" style={{ height: 25, width: "auto", objectFit: "contain", opacity: 0.8 }} />
-                                    ))}
+                        <div className="invoice-card" style={{ maxWidth: 750, margin: "20px auto", background: "#fff", padding: "40px", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+                            <div style={{ textAlign: "center", borderBottom: `4px solid ${red}`, paddingBottom: 25, marginBottom: 30 }}>
+                                <h1 style={{ fontSize: 36, fontWeight: 900, color: dark, letterSpacing: "1px" }}>GERMAN AUTO SERVICE</h1>
+                                <p style={{ fontSize: 14, color: "#555", marginTop: 5 }}>(703) 980-6349 · Nasirahmad9393@gmail.com</p>
+                                <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 15, opacity: 0.8 }}>
+                                    {LOGO_LIST.map((url, i) => <img key={i} src={url} style={{ height: 22 }} />)}
                                 </div>
                             </div>
 
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 30 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 40 }}>
                                 <div>
-                                    <h2 style={{ fontSize: 24, color: red }}>INVOICE</h2>
-                                    <p><b>Client:</b> {clientName}</p>
+                                    <h2 style={{ fontSize: 28, color: red, marginBottom: 10 }}>INVOICE</h2>
+                                    <p><b>Client:</b> {clientName || "—"}</p>
                                     <p><b>Vehicle:</b> {year} {make} {model}</p>
                                 </div>
-                                <div style={{ textAlign: "right" }}>
-                                    <p><b>Invoice #:</b> {invoiceNum}</p>
+                                <div style={{ textAlign: "right", fontSize: 15, lineHeight: "1.8" }}>
+                                    <p><b>Invoice Number:</b> #{invoiceNum}</p>
                                     <p><b>Date:</b> {invoiceDate}</p>
                                 </div>
                             </div>
 
-                            {/* SERVICES TABLE */}
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20 }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 30 }}>
                                 <thead>
                                     <tr style={{ background: dark, color: "#fff" }}>
-                                        <th style={{ textAlign: "left", padding: 10 }}>Service Description</th>
-                                        <th style={{ textAlign: "right", padding: 10 }}>Price</th>
+                                        <th style={{ textAlign: "left", padding: "12px" }}>Description</th>
+                                        <th style={{ textAlign: "right", padding: "12px" }}>Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows.map(r => (
                                         <tr key={r.id} style={{ borderBottom: "1px solid #eee" }}>
-                                            <td style={{ padding: 10 }}>{r.selected === "Custom / Other" ? r.custom : r.selected} {r.note && <small style={{display:'block', color:'#777'}}>{r.note}</small>}</td>
-                                            <td style={{ textAlign: "right", padding: 10 }}>{fmt(parseFloat(r.rate) || 0)}</td>
+                                            <td style={{ padding: "12px" }}>
+                                                <div style={{ fontWeight: 600 }}>{r.selected === "Custom / Other" ? r.custom : r.selected}</div>
+                                                {r.note && <div style={{ fontSize: 12, color: "#777" }}>{r.note}</div>}
+                                            </td>
+                                            <td style={{ textAlign: "right", padding: "12px", fontWeight: 600 }}>{fmt(parseFloat(r.rate) || 0)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
 
-                            {/* TOTALS */}
-                            <div style={{ marginLeft: "auto", width: 250 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0" }}><span>Subtotal:</span><span>{fmt(subtotal)}</span></div>
-                                {discountAmt > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", color: red }}><span>Discount:</span><span>-{fmt(discountAmt)}</span></div>}
-                                <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderTop: "1px solid #ddd", fontWeight: 700, fontSize: 18, marginTop: 5 }}><span>Total:</span><span>{fmt(total)}</span></div>
+                            <div style={{ marginLeft: "auto", width: 280 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 15 }}>
+                                    <span>Subtotal:</span><span>{fmt(subtotal)}</span>
+                                </div>
+                                {discountAmt > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", color: red, fontSize: 15 }}>
+                                    <span>Discount:</span><span>-{fmt(discountAmt)}</span>
+                                </div>}
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 0", borderTop: `2px solid ${dark}`, fontWeight: 900, fontSize: 22, marginTop: 10 }}>
+                                    <span>TOTAL:</span><span>{fmt(total)}</span>
+                                </div>
                             </div>
 
-                            {notes && <div style={{ marginTop: 40, padding: 15, background: "#f9f9f9", borderRadius: 8 }}>
-                                <b>Notes:</b><br />{notes}
+                            {notes && <div style={{ marginTop: 50, padding: "20px", background: "#f9f9f9", borderRadius: 8, borderLeft: `4px solid ${red}` }}>
+                                <b style={{ fontSize: 12, textTransform: "uppercase", color: "#555" }}>Notes / Work Details:</b>
+                                <div style={{ marginTop: 5, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>{notes}</div>
                             </div>}
                         </div>
                     </div>
@@ -166,39 +165,59 @@
             }
 
             return (
-                <div style={{ padding: "20px", maxWidth: 600, margin: "0 auto" }}>
-                    <h2 style={{ textAlign: "center", color: red, marginBottom: 20 }}>Invoice Builder</h2>
-                    <div style={{ background: "#fff", padding: 20, borderRadius: 10, boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
-                        <label style={labelStyle}>Client Name</label>
-                        <input style={inputStyle} value={clientName} onChange={e => setClientName(e.target.value)} />
+                <div style={{ padding: "20px 15px", maxWidth: 600, margin: "0 auto" }}>
+                    <div style={{ textAlign: "center", marginBottom: 25 }}>
+                        <h2 style={{ color: red, fontSize: 24, fontWeight: 900 }}>GERMAN AUTO SERVICE</h2>
+                        <p style={{ fontSize: 13, color: "#666" }}>Invoice Builder</p>
+                    </div>
+
+                    <div style={{ background: "#fff", padding: "20px", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
                         
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-                            <div><label style={labelStyle}>Year</label><input style={inputStyle} value={year} onChange={e => setYear(e.target.value)} /></div>
-                            <div><label style={labelStyle}>Make</label><input style={inputStyle} value={make} onChange={e => setMake(e.target.value)} /></div>
-                            <div><label style={labelStyle}>Model</label><input style={inputStyle} value={model} onChange={e => setModel(e.target.value)} /></div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #eee" }}>
+                            <div>
+                                <label style={labelStyle}>Invoice #</label>
+                                <input style={inputStyle} value={invoiceNum} onChange={e => setInvoiceNum(e.target.value)} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Date</label>
+                                <input type="date" style={inputStyle} value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
+                            </div>
                         </div>
 
-                        <h3 style={{ margin: "20px 0 10px", fontSize: 14 }}>Services</h3>
-                        {rows.map(row => (
-                            <div key={row.id} style={{ padding: 10, border: "1px solid #eee", borderRadius: 8, marginBottom: 10, position: 'relative' }}>
+                        <label style={labelStyle}>Customer Name</label>
+                        <input style={inputStyle} placeholder="John Doe" value={clientName} onChange={e => setClientName(e.target.value)} />
+                        
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+                            <div><label style={labelStyle}>Year</label><input style={inputStyle} placeholder="2022" value={year} onChange={e => setYear(e.target.value)} /></div>
+                            <div><label style={labelStyle}>Make</label><input style={inputStyle} placeholder="BMW" value={make} onChange={e => setMake(e.target.value)} /></div>
+                            <div><label style={labelStyle}>Model</label><input style={inputStyle} placeholder="X5" value={model} onChange={e => setModel(e.target.value)} /></div>
+                        </div>
+
+                        <h3 style={{ margin: "20px 0 10px", fontSize: 13, color: red, textTransform: "uppercase", fontWeight: 800 }}>Services & Labor</h3>
+                        {rows.map((row, idx) => (
+                            <div key={row.id} style={{ padding: "15px", background: "#fcfcfc", border: "1px solid #eee", borderRadius: 10, marginBottom: "15px" }}>
+                                <label style={labelStyle}>Select Service</label>
                                 <select style={inputStyle} value={row.selected} onChange={e => updateRow(row.id, "selected", e.target.value)}>
-                                    <option value="">Select Service</option>
+                                    <option value="">— Choose —</option>
                                     {COMMON_SERVICES.map(s => <option key={s.label} value={s.label}>{s.label}</option>)}
                                 </select>
-                                {row.selected === "Custom / Other" && <input style={inputStyle} placeholder="Service Name" onChange={e => updateRow(row.id, "custom", e.target.value)} />}
-                                <input style={inputStyle} placeholder="Price" value={row.rate} onChange={e => updateRow(row.id, "rate", e.target.value)} />
-                                <button onClick={() => removeRow(row.id)} style={{ color: red, border: 'none', background: 'none', fontSize: 12 }}>Remove</button>
+                                {row.selected === "Custom / Other" && <input style={inputStyle} placeholder="Enter service name..." onChange={e => updateRow(row.id, "custom", e.target.value)} />}
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                    <div><label style={labelStyle}>Price ($)</label><input style={inputStyle} value={row.rate} onChange={e => updateRow(row.id, "rate", e.target.value)} /></div>
+                                    <div><label style={labelStyle}>Job Note</label><input style={inputStyle} placeholder="e.g. Front axle" value={row.note} onChange={e => updateRow(row.id, "note", e.target.value)} /></div>
+                                </div>
+                                {rows.length > 1 && <button onClick={() => removeRow(row.id)} style={{ color: red, background: "none", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Remove Service</button>}
                             </div>
                         ))}
-                        <button onClick={addRow} style={{ width: "100%", padding: 10, marginBottom: 20 }}>+ Add Service</button>
+                        <button onClick={addRow} style={{ width: "100%", padding: "12px", borderRadius: 8, background: "#fff", border: "2px dashed #ddd", color: "#888", fontWeight: 700, marginBottom: "20px" }}>+ Add Another Service</button>
 
-                        <label style={labelStyle}>Discount ($)</label>
-                        <input style={inputStyle} value={discount} onChange={e => setDiscount(e.target.value)} />
+                        <label style={labelStyle}>Discount Amount ($)</label>
+                        <input style={inputStyle} placeholder="0.00" value={discount} onChange={e => setDiscount(e.target.value)} />
 
-                        <label style={labelStyle}>Notes</label>
-                        <textarea style={{...inputStyle, height: 80}} value={notes} onChange={e => setNotes(e.target.value)} />
+                        <label style={labelStyle}>Additional Notes</label>
+                        <textarea style={{ ...inputStyle, height: "100px" }} placeholder="Warranty info, parts details, etc." value={notes} onChange={e => setNotes(e.target.value)} />
 
-                        <button onClick={() => setView("preview")} style={{ width: "100%", padding: 15, background: red, color: "#fff", border: "none", borderRadius: 8, fontWeight: 700 }}>Preview Invoice</button>
+                        <button onClick={() => setView("preview")} style={{ width: "100%", padding: "18px", background: red, color: "#fff", border: "none", borderRadius: 10, fontSize: 18, fontWeight: 800, marginTop: "10px" }}>Preview & Print →</button>
                     </div>
                 </div>
             );
