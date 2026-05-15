@@ -10,7 +10,11 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
 body {
     font-family: Georgia, serif;
@@ -18,14 +22,19 @@ body {
     color:#1a1a1a;
 }
 
-#root { min-height:100vh; }
+#root {
+    min-height:100vh;
+}
 
+/* LOGOS */
 .invoice-logo {
     height:30px;
     width:auto;
     object-fit:contain;
+    margin:0 10px;
 }
 
+/* animated strip */
 .logo-strip {
     display:flex;
     gap:40px;
@@ -41,14 +50,14 @@ body {
     100% { transform:translateX(-100%); }
 }
 
+/* PRINT FIX */
 @media print {
     button { display:none !important; }
-    body { background:white; }
+    body { background:#fff; }
 
     img {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-        visibility: visible !important;
     }
 
     .invoice-logo {
@@ -65,22 +74,26 @@ body {
 
 <script type="text/babel">
 
-const { useState } = React;
+const { useState, useEffect } = React;
 
-/* 🔥 LOGOS (more stable CDN) */
+/* ---------------- LOGOS ---------------- */
 const CAR_BRANDS = [
-    { name:"Mercedes", color:"#00A651", logo:"https://logo.clearbit.com/mercedes-benz.com" },
-    { name:"BMW", color:"#0066B2", logo:"https://logo.clearbit.com/bmw.com" },
-    { name:"Audi", color:"#E4002B", logo:"https://logo.clearbit.com/audi.com" },
-    { name:"Toyota", color:"#EB0A1E", logo:"https://logo.clearbit.com/toyota.com" },
+    { name:"Mercedes", logo:"https://logo.clearbit.com/mercedes-benz.com" },
+    { name:"BMW", logo:"https://logo.clearbit.com/bmw.com" },
+    { name:"Audi", logo:"https://logo.clearbit.com/audi.com" },
+    { name:"Toyota", logo:"https://logo.clearbit.com/toyota.com" },
+    { name:"Ford", logo:"https://logo.clearbit.com/ford.com" },
 ];
 
-/* preload logos so print doesn't break */
-CAR_BRANDS.forEach(b => {
-    const img = new Image();
-    img.src = b.logo;
-});
+/* preload images (FIX PRINT ISSUE) */
+function preloadLogos(){
+    CAR_BRANDS.forEach(b => {
+        const img = new Image();
+        img.src = b.logo;
+    });
+}
 
+/* ---------------- SERVICES ---------------- */
 const SERVICES = [
     { label:"Oil Change", rate:40 },
     { label:"Brake Service", rate:120 },
@@ -91,6 +104,10 @@ const SERVICES = [
 
 function App(){
 
+useEffect(() => {
+    preloadLogos();
+}, []);
+
 const [rows,setRows] = useState([
     { id:Date.now(), service:"", rate:"", discount:"0", note:"" }
 ]);
@@ -100,7 +117,13 @@ const [make,setMake] = useState("");
 const [model,setModel] = useState("");
 
 const addRow = () => {
-    setRows([...rows,{ id:Date.now()+Math.random(), service:"", rate:"", discount:"0", note:"" }]);
+    setRows([...rows,{
+        id:Date.now()+Math.random(),
+        service:"",
+        rate:"",
+        discount:"0",
+        note:""
+    }]);
 };
 
 const update = (id,key,val) => {
@@ -118,22 +141,32 @@ const update = (id,key,val) => {
     }));
 };
 
+/* ---------------- FIXED CALCULATION ---------------- */
 const subtotal = rows.reduce((sum,r)=>{
     const rate = parseFloat(r.rate)||0;
-    const disc = parseFloat(r.discount)||0;
-    return sum + (rate - rate*disc/100);
+    const discount = parseFloat(r.discount)||0;
+    return sum + (rate - rate * discount / 100);
 },0);
 
-const fmt = n => "$"+n.toFixed(2);
+const fmt = n => "$" + n.toFixed(2);
 
-const getLogo = (name) =>
-    CAR_BRANDS.find(b=>b.name.toLowerCase()===name.toLowerCase())?.logo || "";
+/* ---------------- PRINT SAFE ---------------- */
+const handlePrint = () => {
+    setTimeout(() => {
+        window.print();
+    }, 300);
+};
 
 return (
 <div>
 
 {/* HEADER */}
-<div style={{background:"#C0392B",color:"#fff",padding:15,textAlign:"center"}}>
+<div style={{
+    background:"#C0392B",
+    color:"#fff",
+    padding:15,
+    textAlign:"center"
+}}>
     <h2>Invoice Builder</h2>
     <div>German Auto Services • 7039806349</div>
 </div>
@@ -146,25 +179,36 @@ return (
 </div>
 
 {/* FORM */}
-<div style={{padding:20,maxWidth:600,margin:"auto"}}>
+<div style={{padding:20,maxWidth:650,margin:"auto"}}>
 
-<input placeholder="Client Name"
+<input
+placeholder="Client Name"
 value={client}
 onChange={e=>setClient(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:10}}/>
+style={{width:"100%",padding:10,marginBottom:10}}
+/>
 
-<input placeholder="Make"
+<input
+placeholder="Make"
 value={make}
 onChange={e=>setMake(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:10}}/>
+style={{width:"100%",padding:10,marginBottom:10}}
+/>
 
-<input placeholder="Model"
+<input
+placeholder="Model"
 value={model}
 onChange={e=>setModel(e.target.value)}
-style={{width:"100%",padding:10,marginBottom:20}}/>
+style={{width:"100%",padding:10,marginBottom:20}}
+/>
 
+{/* SERVICES */}
 {rows.map((r,i)=>(
-<div key={r.id} style={{background:"#fff",padding:10,marginBottom:10}}>
+<div key={r.id} style={{
+    background:"#fff",
+    padding:10,
+    marginBottom:10
+}}>
 
 <div>Service {i+1}</div>
 
@@ -173,38 +217,50 @@ value={r.service}
 onChange={e=>update(r.id,"service",e.target.value)}
 style={{width:"100%",padding:8}}
 >
-<option value="">Select</option>
-{SERVICES.map(s=>
+<option value="">Select Service</option>
+{SERVICES.map(s=>(
 <option key={s.label}>{s.label}</option>
-)}
+))}
 </select>
 
-<input placeholder="Rate"
+<input
+placeholder="Rate"
 value={r.rate}
 onChange={e=>update(r.id,"rate",e.target.value)}
-style={{width:"100%",padding:8,marginTop:5}}/>
+style={{width:"100%",padding:8,marginTop:5}}
+/>
 
-<input placeholder="Discount %"
+{/* DISCOUNT FIXED */}
+<input
+placeholder="Discount %"
 type="number"
 value={r.discount}
 onChange={e=>update(r.id,"discount",e.target.value)}
-style={{width:"100%",padding:8,marginTop:5}}/>
+style={{width:"100%",padding:8,marginTop:5}}
+/>
 
 </div>
 ))}
 
-<button onClick={addRow}
-style={{padding:10,width:"100%"}}>
+<button
+onClick={addRow}
+style={{padding:10,width:"100%"}}
+>
 + Add Service
 </button>
 
 {/* TOTAL */}
-<div style={{marginTop:20,padding:10,background:"#fff"}}>
+<div style={{
+    marginTop:20,
+    padding:10,
+    background:"#fff"
+}}>
 <h3>Total: {fmt(subtotal)}</h3>
 </div>
 
 {/* PRINT */}
-<button onClick={()=>window.print()}
+<button
+onClick={handlePrint}
 style={{
 width:"100%",
 padding:12,
@@ -217,7 +273,6 @@ Print Invoice
 </button>
 
 </div>
-
 </div>
 );
 }
@@ -226,5 +281,6 @@ ReactDOM.createRoot(document.getElementById("root"))
 .render(<App/>);
 
 </script>
+
 </body>
 </html>
