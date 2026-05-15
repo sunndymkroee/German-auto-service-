@@ -68,6 +68,7 @@
             const [make, setMake] = useState("");
             const [model, setModel] = useState("");
             const [vin, setVin] = useState("");
+            const [mileage, setMileage] = useState("");
             const [rows, setRows] = useState([initialRow()]);
             const [discount, setDiscount] = useState("0");
             const [notes, setNotes] = useState("");
@@ -124,7 +125,7 @@
                                     <p><b>Client:</b> {clientName || "—"}</p>
                                     <p><b>Phone:</b> {clientPhone || "—"}</p>
                                     <p><b>Vehicle:</b> {year} {make} {model}</p>
-                                    <p><b>VIN:</b> {vin || "—"}</p>
+                                    <p><b>VIN:</b> {vin || "—"} | <b>Mileage:</b> {mileage || "—"}</p>
                                 </div>
                                 <div style={{ textAlign: "right", fontSize: 15, lineHeight: "1.8" }}>
                                     <p><b>Invoice Number:</b> #{invoiceNum}</p>
@@ -212,9 +213,15 @@
                             <div><label style={labelStyle}>Make</label><input style={inputStyle} placeholder="BMW" value={make} onChange={e => setMake(e.target.value)} /></div>
                             <div><label style={labelStyle}>Model</label><input style={inputStyle} placeholder="X5" value={model} onChange={e => setModel(e.target.value)} /></div>
                         </div>
-                        <div style={{ marginTop: "10px" }}>
-                            <label style={labelStyle}>VIN Number</label>
-                            <input style={inputStyle} placeholder="17-character VIN" value={vin} onChange={e => setVin(e.target.value)} />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginTop: "10px" }}>
+                            <div>
+                                <label style={labelStyle}>VIN Number</label>
+                                <input style={inputStyle} placeholder="VIN" value={vin} onChange={e => setVin(e.target.value)} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Mileage</label>
+                                <input style={inputStyle} placeholder="85,000" value={mileage} onChange={e => setMileage(e.target.value)} />
+                            </div>
                         </div>
 
                         <h3 style={{ margin: "20px 0 10px", fontSize: 13, color: red, textTransform: "uppercase", fontWeight: 800 }}>Services & Labor</h3>
