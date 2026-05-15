@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>German Auto Invoice Builder</title>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:'Inter',sans-serif;
+      background:#0f1115;
+      color:#fff;
+    }
+
+    #root{
+      min-height:100vh;
+    }
+
+    :root{
+      --bg:#0f1115;
+      --card:#171a21;
+      --card2:#1d212b;
+      --border:#2a2f3a;
+      --text:#ffffff;
+      --muted:#9aa4b2;
+      --red:#d62828;
+      --green:#00a651;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      background:#11151c;
+      border:1px solid var(--border);
+      color:#fff;
+      border-radius:12px;
+      padding:14px;
+      font-size:14px;
+      outline:none;
+      transition:.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+      border-color:var(--red);
+      box-shadow:0 0 0 3px rgba(214,40,40,.15);
+    }
+
+    textarea{
+      resize:vertical;
+      min-height:110px;
+    }
+
+    button{
+      cursor:pointer;
+      border:none;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .section-title{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:#9aa4b2;
+      margin-bottom:18px;
+      font-weight:800;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:14px;
+    }
+
+    .label{
+      font-size:12px;
+      color:#8f98a8;
+      margin-bottom:8px;
+      display:block;
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      backdrop-filter:blur(18px);
+      background:rgba(15,17,21,.85);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .logo-pill{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:#11151c;
+      border:1px solid var(--border);
+      padding:10px 14px;
+      border-radius:14px;
+    }
+
+    .brand-logo{
+      width:36px;
+      height:36px;
+      object-fit:contain;
+      background:#fff;
+      border-radius:10px;
+      padding:4px;
+    }
+
+    .service-card{
+      background:var(--card2);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      position:relative;
+    }
+
+    .remove-btn{
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      background:#232833;
+      color:#fff;
+      border:1px solid var(--border);
+      font-size:16px;
+    }
+
+    .remove-btn:hover{
+      background:#d62828;
+    }
+
+    .main-btn{
+      width:100%;
+      padding:18px;
+      border-radius:16px;
+      font-size:16px;
+      font-weight:800;
+      background:linear-gradient(135deg,#d62828,#ff4d4d);
+      color:#fff;
+      box-shadow:0 10px 25px rgba(214,40,40,.35);
+    }
+
+    .main-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .add-btn{
+      border:2px dashed #3b4250;
+      background:transparent;
+      color:#9aa4b2;
+      padding:16px;
+      border-radius:16px;
+      font-weight:700;
+    }
+
+    .add-btn:hover{
+      border-color:#d62828;
+      color:#fff;
+    }
+
+    .invoice{
+      background:#fff;
+      color:#111;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 30px 60px rgba(0,0,0,.4);
+    }
+
+    .invoice-header{
+      padding:38px;
+      color:#fff;
+    }
+
+    .invoice-body{
+      padding:36px;
+    }
+
+    .invoice-table{
+      border:1px solid #ececec;
+      border-radius:16px;
+      overflow:hidden;
+      margin-top:24px;
+    }
+
+    .invoice-row{
+      display:grid;
+      grid-template-columns:1fr 120px;
+      padding:16px 18px;
+      border-bottom:1px solid #f0f0f0;
+    }
+
+    .invoice-row:last-child{
+      border-bottom:none;
+    }
+
+    .invoice-head{
+      background:#121212;
+      color:#fff;
+      font-weight:800;
+      font-size:12px;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+
+    .totals{
+      width:320px;
+      margin-left:auto;
+      margin-top:24px;
+    }
+
+    .total-box{
+      margin-top:18px;
+      padding:18px 20px;
+      border-radius:16px;
+      color:#fff;
+      font-size:20px;
+      font-weight:900;
+      display:flex;
+      justify-content:space-between;
+    }
+
+    @media(max-width:700px){
+      .grid-2,
+      .grid-3{
+        grid-template-columns:1fr;
+      }
+
+      .invoice-body{
+        padding:22px;
+      }
+
+      .invoice-header{
+        padding:24px;
+      }
+
+      .totals{
+        width:100%;
+      }
+    }
+
+    @media print{
+      body{
+        background:#fff;
+      }
+
+      .no-print{
+        display:none !important;
+      }
+
+      .invoice{
+        box-shadow:none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+const { useState, useMemo } = React;
+
+const CAR_BRANDS = [
+  {
+    name:"Mercedes",
+    color:"#00A651",
+    logo:"https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg"
+  },
+  {
+    name:"BMW",
+    color:"#0066B2",
+    logo:"https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"
+  },
+  {
+    name:"Audi",
+    color:"#C00000",
+    logo:"https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg"
+  },
+  {
+    name:"Porsche",
+    color:"#B12B28",
+    logo:"https://upload.wikimedia.org/wikipedia/en/8/8c/Porsche_logo.svg"
+  },
+  {
+    name:"Volkswagen",
+    color:"#0A5AF5",
+    logo:"https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg"
+  },
+];
+
+const SERVICES = [
+  ["Oil Change & Filter",40],
+  ["Synthetic Oil Change",75],
+  ["Brake Pad Replacement",120],
+  ["Brake Rotor Replacement",150],
+  ["Wheel Alignment",80],
+  ["Battery Replacement",90],
+  ["Spark Plug Replacement",120],
+  ["Coolant Flush",95],
+  ["A/C Recharge",100],
+  ["Transmission Service",180],
+  ["Engine Diagnostic",60],
+  ["Suspension Repair",220],
+  ["Custom / Other",0]
+];
+
+const createRow = () => ({
+  id: Date.now() + Math.random(),
+  service:"",
+  custom:"",
+  notes:"",
+  qty:1,
+  rate:0
+});
+
+function App(){
+
+  const [view,setView] = useState("edit");
+
+  const [invoice,setInvoice] = useState({
+    number:"001",
+    date:new Date().toISOString().split("T")[0],
+    due:new Date().toISOString().split("T")[0],
+    client:"",
+    phone:"",
+    email:"",
+    year:"",
+    make:"",
+    model:"",
+    color:"",
+    mileage:"",
+    plate:"",
+    vin:"",
+    tax:0,
+    notes:""
+  });
+
+  const [rows,setRows] = useState([createRow()]);
+
+  const brand = CAR_BRANDS.find(
+    b => b.name.toLowerCase() === invoice.make.toLowerCase()
+  );
+
+  const themeColor = brand?.color || "#d62828";
+
+  const subtotal = useMemo(() => {
+    return rows.reduce((sum,r)=>{
+      return sum + ((Number(r.qty)||0) * (Number(r.rate)||0));
+    },0);
+  },[rows]);
+
+  const taxAmount = subtotal * ((Number(invoice.tax)||0)/100);
+
+  const total = subtotal + taxAmount;
+
+  const money = n =>
+    new Intl.NumberFormat('en-US',{
+      style:'currency',
+      currency:'USD'
+    }).format(n);
+
+  const updateInvoice = (field,val) => {
+    setInvoice(prev => ({...prev,[field]:val}));
+  };
+
+  const updateRow = (id,field,val) => {
+    setRows(prev =>
+      prev.map(r => {
+        if(r.id !== id) return r;
+
+        const updated = {...r,[field]:val};
+
+        if(field === "service"){
+          const found = SERVICES.find(s => s[0] === val);
+          if(found) updated.rate = found[1];
+        }
+
+        return updated;
+      })
+    );
+  };
+
+  const removeRow = id => {
+    setRows(prev => prev.filter(r => r.id !== id));
+  };
+
+  const addRow = () => {
+    setRows(prev => [...prev,createRow()]);
+  };
+
+  if(view === "preview"){
+    return (
+      <div style={{padding:"30px"}}>
+        <div className="no-print" style={{
+          maxWidth:1100,
+          margin:"0 auto 20px",
+          display:"flex",
+          justifyContent:"space-between",
+          gap:12
+        }}>
+          <button
+            onClick={()=>setView("edit")}
+            style={{
+              padding:"14px 20px",
+              borderRadius:14,
+              background:"#1b1f28",
+              color:"#fff",
+              fontWeight:700
+            }}
+          >
+            ← Back
+          </button>
+
+          <button
+            onClick={()=>window.print()}
+            style={{
+              padding:"14px 24px",
+              borderRadius:14,
+              background:themeColor,
+              color:"#fff",
+              fontWeight:800
+            }}
+          >
+            Print Invoice
+          </button>
+        </div>
+
+        <div className="invoice" style={{maxWidth:1100,margin:"0 auto"}}>
+
+          <div
+            className="invoice-header"
+            style={{
+              background:`linear-gradient(135deg, ${themeColor}, #111)`
+            }}
+          >
+            <div style={{
+              display:"flex",
+              justifyContent:"space-between",
+              alignItems:"center",
+              flexWrap:"wrap",
+              gap:20
+            }}>
+
+              <div>
+                <div style={{
+                  display:"flex",
+                  alignItems:"center",
+                  gap:16
+                }}>
+                  {brand && (
+                    <img
+                      src={brand.logo}
+                      className="brand-logo"
+                    />
+                  )}
+
+                  <div>
+                    <div style={{
+                      fontSize:38,
+                      fontWeight:900
+                    }}>
+                      GERMAN AUTO
+                    </div>
+
+                    <div style={{
+                      opacity:.8,
+                      marginTop:4
+                    }}>
+                      Premium Vehicle Invoice Builder
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                background:"rgba(255,255,255,.12)",
+                padding:"18px",
+                borderRadius:18,
+                minWidth:220
+              }}>
+                <div><b>Invoice #:</b> {invoice.number}</div>
+                <div><b>Date:</b> {invoice.date}</div>
+                <div><b>Due:</b> {invoice.due}</div>
+              </div>
+
+            </div>
+          </div>
+
+          <div className="invoice-body">
+
+            <div className="grid-2">
+
+              <div>
+                <div style={{
+                  fontSize:12,
+                  fontWeight:800,
+                  letterSpacing:".12em",
+                  textTransform:"uppercase",
+                  color:"#777"
+                }}>
+                  Client
+                </div>
+
+                <div style={{
+                  marginTop:10,
+                  lineHeight:1.8
+                }}>
+                  <div style={{fontWeight:800,fontSize:20}}>
+                    {invoice.client || "Client Name"}
+                  </div>
+
+                  <div>{invoice.phone}</div>
+                  <div>{invoice.email}</div>
+                </div>
+              </div>
+
+              <div>
+                <div style={{
+                  fontSize:12,
+                  fontWeight:800,
+                  letterSpacing:".12em",
+                  textTransform:"uppercase",
+                  color:"#777"
+                }}>
+                  Vehicle
+                </div>
+
+                <div style={{
+                  marginTop:10,
+                  lineHeight:1.9
+                }}>
+                  <div>
+                    <b>{invoice.year}</b> {invoice.make} {invoice.model}
+                  </div>
+
+                  <div>Color: {invoice.color}</div>
+                  <div>Mileage: {invoice.mileage}</div>
+                  <div>Plate: {invoice.plate}</div>
+                  <div>VIN: {invoice.vin}</div>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="invoice-table">
+
+              <div className="invoice-row invoice-head">
+                <div>Service</div>
+                <div style={{textAlign:"right"}}>Total</div>
+              </div>
+
+              {rows.map(r => {
+
+                const title =
+                  r.service === "Custom / Other"
+                    ? r.custom
+                    : r.service;
+
+                const lineTotal =
+                  (Number(r.qty)||0) *
+                  (Number(r.rate)||0);
+
+                return (
+                  <div className="invoice-row" key={r.id}>
+                    <div>
+                      <div style={{fontWeight:700}}>
+                        {title || "Service"}
+                      </div>
+
+                      {r.notes && (
+                        <div style={{
+                          fontSize:13,
+                          color:"#666",
+                          marginTop:6
+                        }}>
+                          {r.notes}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{
+                      textAlign:"right",
+                      fontWeight:800
+                    }}>
+                      {money(lineTotal)}
+                    </div>
+                  </div>
+                );
+              })}
+
+            </div>
+
+            <div className="totals">
+
+              <div style={{
+                display:"flex",
+                justifyContent:"space-between",
+                marginBottom:10
+              }}>
+                <span>Subtotal</span>
+                <b>{money(subtotal)}</b>
+              </div>
+
+              <div style={{
+                display:"flex",
+                justifyContent:"space-between",
+                marginBottom:10
+              }}>
+                <span>Tax ({invoice.tax}%)</span>
+                <b>{money(taxAmount)}</b>
+              </div>
+
+              <div
+                className="total-box"
+                style={{
+                  background:themeColor
+                }}
+              >
+                <span>Total</span>
+                <span>{money(total)}</span>
+              </div>
+
+            </div>
+
+            {invoice.notes && (
+              <div style={{
+                marginTop:30,
+                background:"#f6f6f6",
+                padding:20,
+                borderRadius:16
+              }}>
+                <div style={{
+                  fontWeight:800,
+                  marginBottom:10
+                }}>
+                  Notes
+                </div>
+
+                <div style={{
+                  color:"#444",
+                  lineHeight:1.8
+                }}>
+                  {invoice.notes}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+
+      <div className="topbar no-print">
+        <div style={{
+          maxWidth:1200,
+          margin:"0 auto",
+          padding:"18px 20px",
+          display:"flex",
+          justifyContent:"space-between",
+          alignItems:"center",
+          flexWrap:"wrap",
+          gap:14
+        }}>
+
+          <div>
+            <div style={{
+              fontSize:26,
+              fontWeight:900,
+              letterSpacing:"-.03em"
+            }}>
+              German Auto
+            </div>
+
+            <div style={{
+              color:"#9aa4b2",
+              marginTop:4
+            }}>
+              Premium Invoice Builder
+            </div>
+          </div>
+
+          <div style={{
+            display:"flex",
+            gap:10,
+            flexWrap:"wrap"
+          }}>
+            {CAR_BRANDS.map(b => (
+              <div
+                className="logo-pill"
+                key={b.name}
+              >
+                <img
+                  src={b.logo}
+                  className="brand-logo"
+                />
+
+                <div style={{
+                  fontWeight:700,
+                  fontSize:13
+                }}>
+                  {b.name}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth:1200,
+        margin:"0 auto",
+        padding:"30px 20px 80px"
+      }}>
+
+        <div className="grid-2">
+
+          <div style={{
+            display:"flex",
+            flexDirection:"column",
+            gap:20
+          }}>
+
+            <div className="card">
+
+              <div className="section-title">
+                Invoice Details
+              </div>
+
+              <div className="grid-3">
+
+                <div>
+                  <label className="label">Invoice #</label>
+                  <input
+                    value={invoice.number}
+                    onChange={e=>updateInvoice("number",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Date</label>
+                  <input
+                    type="date"
+                    value={invoice.date}
+                    onChange={e=>updateInvoice("date",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Due Date</label>
+                  <input
+                    type="date"
+                    value={invoice.due}
+                    onChange={e=>updateInvoice("due",e.target.value)}
+                  />
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="card">
+
+              <div className="section-title">
+                Client
+              </div>
+
+              <div style={{
+                display:"flex",
+                flexDirection:"column",
+                gap:14
+              }}>
+
+                <div>
+                  <label className="label">Client Name</label>
+                  <input
+                    value={invoice.client}
+                    onChange={e=>updateInvoice("client",e.target.value)}
+                  />
+                </div>
+
+                <div className="grid-2">
+
+                  <div>
+                    <label className="label">Phone</label>
+                    <input
+                      value={invoice.phone}
+                      onChange={e=>updateInvoice("phone",e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="label">Email</label>
+                    <input
+                      value={invoice.email}
+                      onChange={e=>updateInvoice("email",e.target.value)}
+                    />
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="card">
+
+              <div className="section-title">
+                Vehicle
+              </div>
+
+              <div className="grid-2">
+
+                <div>
+                  <label className="label">Year</label>
+                  <input
+                    value={invoice.year}
+                    onChange={e=>updateInvoice("year",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Make</label>
+                  <input
+                    value={invoice.make}
+                    onChange={e=>updateInvoice("make",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Model</label>
+                  <input
+                    value={invoice.model}
+                    onChange={e=>updateInvoice("model",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Color</label>
+                  <input
+                    value={invoice.color}
+                    onChange={e=>updateInvoice("color",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Mileage</label>
+                  <input
+                    value={invoice.mileage}
+                    onChange={e=>updateInvoice("mileage",e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Plate</label>
+                  <input
+                    value={invoice.plate}
+                    onChange={e=>updateInvoice("plate",e.target.value)}
+                  />
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div style={{
+            display:"flex",
+            flexDirection:"column",
+            gap:20
+          }}>
+
+            <div className="card">
+
+              <div className="section-title">
+                Services
+              </div>
+
+              <div style={{
+                display:"flex",
+                flexDirection:"column",
+                gap:16
+              }}>
+
+                {rows.map((row,index)=>(
+                  <div
+                    className="service-card"
+                    key={row.id}
+                  >
+
+                    {rows.length > 1 && (
+                      <button
+                        className="remove-btn"
+                        onClick={()=>removeRow(row.id)}
+                      >
+                        ×
+                      </button>
+                    )}
+
+                    <div style={{
+                      marginBottom:14,
+                      fontWeight:800,
+                      color:"#fff"
+                    }}>
+                      Service #{index + 1}
+                    </div>
+
+                    <div>
+                      <label className="label">Service</label>
+
+                      <select
+                        value={row.service}
+                        onChange={e=>updateRow(row.id,"service",e.target.value)}
+                      >
+                        <option value="">Select Service</option>
+
+                        {SERVICES.map(s=>(
+                          <option
+                            key={s[0]}
+                            value={s[0]}
+                          >
+                            {s[0]}
+                          </option>
+                        ))}
+
+                      </select>
+                    </div>
+
+                    {row.service === "Custom / Other" && (
+                      <div style={{marginTop:12}}>
+                        <label className="label">
+                          Custom Service
+                        </label>
+
+                        <input
+                          value={row.custom}
+                          onChange={e=>updateRow(row.id,"custom",e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid-2" style={{marginTop:12}}>
+
+                      <div>
+                        <label className="label">Quantity</label>
+
+                        <input
+                          type="number"
+                          value={row.qty}
+                          onChange={e=>updateRow(row.id,"qty",e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="label">Rate</label>
+
+                        <input
+                          type="number"
+                          value={row.rate}
+                          onChange={e=>updateRow(row.id,"rate",e.target.value)}
+                        />
+                      </div>
+
+                    </div>
+
+                    <div style={{marginTop:12}}>
+                      <label className="label">Notes</label>
+
+                      <textarea
+                        value={row.notes}
+                        onChange={e=>updateRow(row.id,"notes",e.target.value)}
+                      />
+                    </div>
+
+                  </div>
+                ))}
+
+                <button
+                  className="add-btn"
+                  onClick={addRow}
+                >
+                  + Add Service
+                </button>
+
+              </div>
+
+            </div>
+
+            <div className="card">
+
+              <div className="section-title">
+                Totals
+              </div>
+
+              <div>
+                <label className="label">
+                  Tax %
+                </label>
+
+                <input
+                  type="number"
+                  value={invoice.tax}
+                  onChange={e=>updateInvoice("tax",e.target.value)}
+                />
+              </div>
+
+              <div style={{
+                marginTop:20,
+                background:"#11151c",
+                border:"1px solid var(--border)",
+                borderRadius:18,
+                padding:20
+              }}>
+
+                <div style={{
+                  display:"flex",
+                  justifyContent:"space-between",
+                  marginBottom:12
+                }}>
+                  <span style={{color:"#9aa4b2"}}>
+                    Subtotal
+                  </span>
+
+                  <b>{money(subtotal)}</b>
+                </div>
+
+                <div style={{
+                  display:"flex",
+                  justifyContent:"space-between",
+                  marginBottom:12
+                }}>
+                  <span style={{color:"#9aa4b2"}}>
+                    Tax
+                  </span>
+
+                  <b>{money(taxAmount)}</b>
+                </div>
+
+                <div style={{
+                  display:"flex",
+                  justifyContent:"space-between",
+                  borderTop:"1px solid var(--border)",
+                  paddingTop:14,
+                  fontSize:22,
+                  fontWeight:900
+                }}>
+                  <span>Total</span>
+                  <span style={{color:themeColor}}>
+                    {money(total)}
+                  </span>
+                </div>
+
+              </div>
+
+              <div style={{marginTop:20}}>
+                <label className="label">
+                  Notes
+                </label>
+
+                <textarea
+                  value={invoice.notes}
+                  onChange={e=>updateInvoice("notes",e.target.value)}
+                />
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style={{
+          marginTop:30
+        }}>
+          <button
+            className="main-btn"
+            onClick={()=>setView("preview")}
+          >
+            Preview Premium Invoice →
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(
+  document.getElementById("root")
+);
+
+root.render(<App />);
+</script>
+</body>
+</html>
